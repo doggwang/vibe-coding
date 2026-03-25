@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Polyline } from 'react-leaflet';
+import { Polyline, Marker, Popup } from 'react-leaflet';
 import { useApp } from '../context/AppContext';
-import { filterPhotosByTag, sortPhotosByTime } from '../utils/mapUtils';
+import { sortPhotosByTime } from '../utils/mapUtils';
 
 let globalTraceSettings = {
   startDate: '',
@@ -15,7 +15,7 @@ export const setGlobalTraceSettings = (settings) => {
 };
 
 const TraceLine = () => {
-  const { photos, selectedTag, showTrace } = useApp();
+  const { photos, selectedTags, showTrace, getPhotosByTags, setSelectedPhoto } = useApp();
   const [settings, setSettings] = useState(globalTraceSettings);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const TraceLine = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const filteredPhotos = filterPhotosByTag(photos, selectedTag);
+  const filteredPhotos = getPhotosByTags(selectedTags);
   const sortedPhotos = sortPhotosByTime(filteredPhotos.filter(p => p.gps && p.createTime));
 
   const filterByDateRange = (photos) => {
@@ -49,19 +49,48 @@ const TraceLine = () => {
     photo.gps.longitude
   ]);
 
+  const handleMarkerClick = (photo) => {
+    setSelectedPhoto(photo.id);
+  };
+
   if (!showTrace || positions.length < 2) {
     return null;
   }
 
   return (
-    <Polyline
-      positions={positions}
-      pathOptions={{
-        color: settings.traceColor,
-        weight: settings.traceWidth,
-        opacity: 0.8
-      }}
-    />
+    <>
+      <Polyline
+        positions={positions}
+        pathOptions={{
+          color: settings.traceColor,
+          weight: settings.traceWidth,
+          opacity: 0.8
+        }}
+      />
+      {datedPhotos.map((photo) => (
+        <Marker
+          key={photo.id}
+          position={[photo.gps.latitude, photo.gps.longitude]}
+          eventHandlers={{
+            click: () => handleMarkerClick(photo)
+          }}
+        >
+          <Popup>
+            <div className="p-2">
+              <img
+                src={photo.thumbnailUrl}
+                alt={photo.name}
+                className="w-32 h-32 object-cover rounded-lg mb-2"
+              />
+              <p className="text-sm font-semibold text-slate-800">{photo.name}</p>
+              <p className="text-xs text-slate-500">
+                {new Date(photo.createTime).toLocaleString('zh-CN')}
+              </p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </>
   );
 };
 

@@ -1,7 +1,23 @@
 import exifr from 'exifr';
 
+const isHeicFile = (file) => {
+  return file.type === 'image/heic' || 
+         file.type === 'image/heif' ||
+         file.name.toLowerCase().endsWith('.heic') || 
+         file.name.toLowerCase().endsWith('.heif');
+};
+
 export const parsePhotoExif = async (file) => {
   try {
+    if (isHeicFile(file)) {
+      console.log('检测到HEIC格式，跳过EXIF解析');
+      return {
+        gps: null,
+        createTime: file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString(),
+        cameraInfo: 'HEIC格式'
+      };
+    }
+    
     const exifData = await exifr.parse(file);
     
     const result = {
@@ -10,7 +26,7 @@ export const parsePhotoExif = async (file) => {
       cameraInfo: null
     };
 
-    if (exifData) {
+    if (exifData !== null && exifData !== undefined) {
       if (exifData.latitude && exifData.longitude) {
         result.gps = {
           latitude: exifData.latitude,

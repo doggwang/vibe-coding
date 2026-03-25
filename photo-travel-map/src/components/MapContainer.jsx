@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { useApp } from '../context/AppContext';
-import { filterPhotosByTag, sortPhotosByTime } from '../utils/mapUtils';
+import { useToast } from './Toast';
+import { sortPhotosByTime } from '../utils/mapUtils';
 import { TraceLine } from './TraceLine';
 import 'leaflet/dist/leaflet.css';
 
@@ -18,12 +19,13 @@ const MapController = ({ center, zoom }) => {
 };
 
 const MapContainerComponent = () => {
-  const { photos, selectedTag, showTrace, selectedPhoto, setSelectedPhoto } = useApp();
+  const { photos, selectedTags, showTrace, selectedPhoto, setSelectedPhoto, getPhotosByTags } = useApp();
+  const { error } = useToast();
   const [center, setCenter] = useState([35.8617, 104.1954]);
   const [zoom, setZoom] = useState(4);
   const [locating, setLocating] = useState(false);
 
-  const filteredPhotos = filterPhotosByTag(photos, selectedTag);
+  const filteredPhotos = getPhotosByTags(selectedTags);
   const sortedPhotos = sortPhotosByTime(filteredPhotos.filter(p => p.gps));
 
   useEffect(() => {
@@ -46,7 +48,7 @@ const MapContainerComponent = () => {
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
-      alert('您的浏览器不支持定位功能');
+      error('您的浏览器不支持定位功能');
       return;
     }
 
@@ -72,7 +74,7 @@ const MapContainerComponent = () => {
             errorMessage = '定位请求超时';
             break;
         }
-        alert(errorMessage);
+        error(errorMessage);
       },
       {
         enableHighAccuracy: true,

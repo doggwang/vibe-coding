@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useToast } from './Toast';
 import { Button } from './ui';
 
 const TagManager = () => {
-  const { tags, photos, selectedTag, setSelectedTag, addTag, updateTag, deleteTag } = useApp();
+  const { tags, photos, selectedTags, toggleTagSelection, clearTagSelection, addTag, updateTag, deleteTag } = useApp();
+  const { warning, success } = useToast();
   const [newTagName, setNewTagName] = useState('');
   const [editingTag, setEditingTag] = useState(null);
   const [editName, setEditName] = useState('');
@@ -14,7 +16,7 @@ const TagManager = () => {
     
     const existingTag = tags.find(t => t.name === newTagName);
     if (existingTag) {
-      alert('标签已存在');
+      warning('标签已存在');
       return;
     }
 
@@ -27,6 +29,7 @@ const TagManager = () => {
 
     addTag(newTag);
     setNewTagName('');
+    success('标签添加成功');
   };
 
   const handleUpdateTag = () => {
@@ -46,9 +49,6 @@ const TagManager = () => {
     const tag = tags.find(t => t.id === tagId);
     if (confirm(`确定要删除标签"${tag.name}"吗？`)) {
       deleteTag(tagId);
-      if (selectedTag === tagId) {
-        setSelectedTag(null);
-      }
     }
   };
 
@@ -84,9 +84,9 @@ const TagManager = () => {
 
       <div className="flex flex-wrap gap-2 mb-4">
         <button
-          onClick={() => setSelectedTag(null)}
+          onClick={clearTagSelection}
           className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            selectedTag === null 
+            selectedTags.length === 0 
               ? 'bg-amber-500 text-white shadow-lg transform scale-105' 
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
@@ -97,14 +97,14 @@ const TagManager = () => {
         {tags.map((tag) => (
           <button
             key={tag.id}
-            onClick={() => setSelectedTag(tag.id)}
+            onClick={() => toggleTagSelection(tag.id)}
             className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              selectedTag === tag.id 
+              selectedTags.includes(tag.id) 
                 ? 'text-white shadow-lg transform scale-105' 
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
             }`}
             style={{
-              backgroundColor: selectedTag === tag.id ? tag.color : undefined
+              backgroundColor: selectedTags.includes(tag.id) ? tag.color : undefined
             }}
           >
             {tag.name}

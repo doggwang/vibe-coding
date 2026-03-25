@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
 export const useAppContext = () => {
   const [photos, setPhotos] = useState([]);
   const [tags, setTags] = useState([]);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [showTrace, setShowTrace] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -124,7 +124,7 @@ export const useAppContext = () => {
       localStorage.removeItem(STORAGE_KEYS.TAGS);
       setPhotos([]);
       setTags([]);
-      setSelectedTag(null);
+      setSelectedTags([]);
       setSelectedPhoto(null);
     }
   }, []);
@@ -134,14 +134,35 @@ export const useAppContext = () => {
     return photos.filter(photo => photo.tags.includes(tagId));
   }, [photos]);
 
+  const getPhotosByTags = useCallback((tagIds) => {
+    if (!tagIds || tagIds.length === 0) return photos;
+    return photos.filter(photo => 
+      tagIds.some(tagId => photo.tags.includes(tagId))
+    );
+  }, [photos]);
+
+  const toggleTagSelection = useCallback((tagId) => {
+    setSelectedTags(prev => {
+      if (prev.includes(tagId)) {
+        return prev.filter(id => id !== tagId);
+      } else {
+        return [...prev, tagId];
+      }
+    });
+  }, []);
+
+  const clearTagSelection = useCallback(() => {
+    setSelectedTags([]);
+  }, []);
+
   const value = {
     photos,
     tags,
-    selectedTag,
+    selectedTags,
     selectedPhoto,
     showTrace,
     loading,
-    setSelectedTag,
+    setSelectedTags,
     setSelectedPhoto,
     setShowTrace,
     setLoading,
@@ -155,6 +176,9 @@ export const useAppContext = () => {
     importData,
     clearAllData,
     getPhotosByTag,
+    getPhotosByTags,
+    toggleTagSelection,
+    clearTagSelection,
   };
 
   return value;

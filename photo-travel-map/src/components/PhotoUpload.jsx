@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { useToast } from './Toast';
 import { parsePhotoExif, createThumbnail, createPhotoUrl } from '../utils/exifParser';
 import { LoadingSpinner } from './ui';
 
 const PhotoUpload = () => {
   const { addPhoto, setLoading, tags, addTag } = useApp();
+  const { error, success } = useToast();
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewPhotos, setPreviewPhotos] = useState([]);
@@ -41,6 +43,10 @@ const PhotoUpload = () => {
         const photoUrl = await createPhotoUrl(file);
         const thumbnailUrl = await createThumbnail(file);
 
+        if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+          warning(`HEIC格式照片 "${file.name}" 已上传，但可能无法提取GPS信息，建议转换为JPEG格式`);
+        }
+
         validPhotos.push({
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           name: file.name,
@@ -58,8 +64,9 @@ const PhotoUpload = () => {
           } : null,
           showLocationPicker: false
         });
-      } catch (error) {
-        console.error('解析照片失败:', error);
+      } catch (err) {
+        console.error('解析照片失败:', err);
+        error(`解析照片 "${file.name}" 失败，请检查文件是否损坏`);
       }
     }
     
@@ -122,11 +129,11 @@ const PhotoUpload = () => {
         };
         setPreviewPhotos(updatedPhotos);
       } else {
-        alert('未找到该地址，请尝试其他搜索词');
+        error('未找到该地址，请尝试其他搜索词');
       }
     } catch (error) {
       console.error('搜索位置失败:', error);
-      alert('搜索位置失败，请稍后重试');
+      error('搜索位置失败，请稍后重试');
     }
   };
 
@@ -223,7 +230,7 @@ const PhotoUpload = () => {
     } else {
       setPreviewPhotos([]);
       setCurrentIndex(0);
-      alert('所有照片上传完成！');
+      success('所有照片上传完成！');
     }
   };
 
@@ -248,7 +255,7 @@ const PhotoUpload = () => {
     
     setPreviewPhotos([]);
     setCurrentIndex(0);
-    alert('所有照片上传完成！');
+    success('所有照片上传完成！');
   };
 
   const handleCancel = () => {
@@ -338,7 +345,7 @@ const PhotoUpload = () => {
           <input
             type="file"
             id="photo-upload"
-            accept="image/*,.webp"
+            accept="image/*,.heic,.heif,.webp"
             multiple
             onChange={handleFileSelect}
             className="hidden"

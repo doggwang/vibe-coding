@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../context/AppContext';
-import { filterPhotosByTag } from '../utils/mapUtils';
+import { useApp } from '../context/AppContext';
+import { sortPhotosByTime } from '../utils/mapUtils';
 
 const PhotoList = () => {
-  const { photos, selectedTag, deletePhoto, updatePhoto } = useAppContext();
+  const { photos, selectedTags, deletePhoto, updatePhoto, getPhotosByTags } = useApp();
   const [selectedPhoto, setSelectedPhoto] = useState(null);
 
-  const filteredPhotos = filterPhotosByTag(photos, selectedTag);
+  const filteredPhotos = getPhotosByTags(selectedTags);
+  const sortedPhotos = sortPhotosByTime(filteredPhotos);
 
   const handleDeletePhoto = (photoId) => {
     if (confirm('确定要删除这张照片吗？')) {

@@ -1,22 +1,25 @@
 import React, { useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { useToast } from './Toast';
 import { Button } from './ui';
 
 const BackupManager = () => {
   const { photos, tags, exportData, importData } = useApp();
+  const { warning, success, error } = useToast();
   const fileInputRef = useRef(null);
 
   const handleExport = () => {
     if (photos.length === 0) {
-      alert('暂无数据可导出');
+      warning('暂无数据可导出');
       return;
     }
     exportData();
+    success('数据导出成功');
   };
 
   const handleImport = async (e) => {
     const file = e.target.files[0];
-    if (!file) return
+    if (!file) return;
 
     if (!confirm('导入数据将覆盖现有数据，确定要继续吗？')) {
       e.target.value = '';
@@ -25,10 +28,10 @@ const BackupManager = () => {
 
     try {
       await importData(file);
-      alert('数据导入成功！');
+      success('数据导入成功！');
       e.target.value = '';
     } catch (error) {
-      alert('导入失败：' + error.message);
+      error('导入失败：' + error.message);
       e.target.value = '';
     }
   };
