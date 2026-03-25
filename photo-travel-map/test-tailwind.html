@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tailwind 测试</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+  <h1 class="text-2xl font-bold mb-4">Tailwind 颜色测试</h1>
+  
+  <div class="space-y-4">
+    <div class="bg-slate-900 text-white p-4 rounded-lg">Slate-900 (深色头部)</div>
+    <div class="bg-slate-800 text-white p-4 rounded-lg">Slate-800</div>
+    <div class="bg-slate-50 text-slate-900 p-4 rounded-lg">Slate-50 (浅色背景)</div>
+    <div class="bg-amber-500 text-white p-4 rounded-lg">Amber-500 (橙色)</div>
+    <div class="bg-amber-400 text-white p-4 rounded-lg">Amber-400</div>
+    <div class="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 text-white p-4 rounded-lg">
+      渐变测试 (amber-400 → orange-500 → red-500)
+    </div>
+  </div>
+
+  <h2 class="text-xl font-bold mt-8 mb-4">动画测试</h2>
+  <div class="space-y-4">
+    <div class="w-12 h-12 bg-amber-500 rounded-lg animate-spin">旋转</div>
+    <div class="w-12 h-12 bg-slate-500 rounded-lg hover:scale-110 transition-transform cursor-pointer">
+      悬停放大
+    </div>
+  </div>
+</body>
+</html>

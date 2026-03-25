@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Polyline } from 'react-leaflet';
-import { useAppContext } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
 import { filterPhotosByTag, sortPhotosByTime } from '../utils/mapUtils';
 
 let globalTraceSettings = {
@@ -15,7 +15,7 @@ export const setGlobalTraceSettings = (settings) => {
 };
 
 const TraceLine = () => {
-  const { photos, selectedTag, showTrace } = useAppContext();
+  const { photos, selectedTag, showTrace } = useApp();
   const [settings, setSettings] = useState(globalTraceSettings);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ const TraceLine = () => {
 };
 
 const TraceSettings = () => {
-  const { photos, showTrace, setShowTrace } = useAppContext();
+  const { photos, showTrace, setShowTrace } = useApp();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [traceColor, setTraceColor] = useState('#3b82f6');

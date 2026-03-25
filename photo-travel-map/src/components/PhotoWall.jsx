@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
 import { filterPhotosByTag, sortPhotosByTime } from '../utils/mapUtils';
 import { EmptyState } from './ui';
 
 const PhotoWall = () => {
-  const { photos, selectedTag, tags, selectedPhoto, setSelectedPhoto } = useAppContext();
+  const { photos, selectedTag, tags, selectedPhoto, setSelectedPhoto } = useApp();
   const filteredPhotos = filterPhotosByTag(photos, selectedTag);
   const sortedPhotos = sortPhotosByTime(filteredPhotos);
   const photoRefs = useRef({});
@@ -50,83 +50,47 @@ const PhotoWall = () => {
 
   return (
     <div className="p-4">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <h2 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>照片墙</h2>
-        <span style={{ fontSize: '0.875rem', color: '#4b5563' }}>{sortedPhotos.length} 张照片</span>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-slate-800">照片墙</h2>
+        <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{sortedPhotos.length} 张照片</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+      <div className="grid grid-cols-2 gap-3">
         {sortedPhotos.map((photo) => (
           <div
             key={photo.id}
             ref={(el) => photoRefs.current[photo.id] = el}
             onClick={() => handlePhotoClick(photo)}
-            style={{
-              position: 'relative',
-              background: 'white',
-              borderRadius: '0.75rem',
-              border: selectedPhoto === photo.id ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-              overflow: 'hidden',
-              transition: 'all 0.3s',
-              cursor: 'pointer',
-              boxShadow: selectedPhoto === photo.id ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none'
-            }}
+            className={`relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 group ${
+              selectedPhoto === photo.id 
+                ? 'ring-2 ring-amber-500 ring-offset-2 shadow-xl shadow-amber-500/20 scale-[1.02]' 
+                : 'border border-slate-200 hover:border-amber-300 hover:shadow-lg hover:scale-[1.01]'
+            }`}
           >
-            <div style={{ aspectRatio: '1', position: 'relative', overflow: 'hidden' }}>
+            <div className="aspect-square relative overflow-hidden">
               <img
                 src={photo.thumbnailUrl}
                 alt={photo.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div style={{ 
-                position: 'absolute', 
-                inset: 0, 
-                background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)', 
-                opacity: 0, 
-                transition: 'opacity 0.3s' 
-              }} />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               {photo.tags.length > 0 && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '0.75rem', 
-                  left: '0.75rem', 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: '0.375rem',
-                  transform: 'translateY(-8px)',
-                  opacity: 0,
-                  transition: 'all 0.3s 0.1s'
-                }}>
+                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 transform -translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">
                   {photo.tags.slice(0, 2).map((tagId) => {
                     const tag = tags.find(t => t.id === tagId);
                     return (
                       <span
                         key={tagId}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          background: tag ? `${tag.color}E6` : '#ffffff',
-                          fontSize: '0.625rem',
-                          fontWeight: '500',
-                          color: '#374151',
-                          borderRadius: '0.5rem',
-                          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
-                        }}
+                        className="px-2.5 py-1 bg-white/95 backdrop-blur-sm text-[10px] font-semibold text-slate-700 rounded-lg shadow-lg"
+                        style={{ backgroundColor: tag ? `${tag.color}E6` : undefined }}
                       >
                         {getTagName(tagId)}
                       </span>
                     );
                   })}
                   {photo.tags.length > 2 && (
-                    <span style={{
-                      padding: '0.25rem 0.5rem',
-                      background: '#ffffff',
-                      fontSize: '0.625rem',
-                      fontWeight: '500',
-                      color: '#374151',
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
-                    }}>
+                    <span className="px-2.5 py-1 bg-white/95 backdrop-blur-sm text-[10px] font-semibold text-slate-700 rounded-lg shadow-lg">
                       +{photo.tags.length - 2}
                     </span>
                   )}
@@ -134,18 +98,18 @@ const PhotoWall = () => {
               )}
             </div>
 
-            <div style={{ padding: '0.75rem', transition: 'background 0.3s' }}>
-              <h3 style={{ fontSize: '0.75rem', fontWeight: '600', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '0.5rem' }}>{photo.name}</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.625rem', color: '#6b7280' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <svg style={{ width: '0.75rem', height: '0.75rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-3 bg-white transition-colors duration-300 group-hover:bg-slate-50">
+              <h3 className="text-xs font-semibold text-slate-800 truncate mb-2">{photo.name}</h3>
+              <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                <div className="flex items-center gap-1">
+                  <svg className="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   <span className="truncate">{photo.gps?.address || '未知位置'}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <svg className="w-3 h-3 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span>{new Date(photo.createTime).toLocaleDateString('zh-CN')}</span>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
 import { parsePhotoExif, createThumbnail, createPhotoUrl } from '../utils/exifParser';
 import { LoadingSpinner } from './ui';
 
 const PhotoUpload = () => {
-  const { addPhoto, setLoading, tags, addTag } = useAppContext();
+  const { addPhoto, setLoading, tags, addTag } = useApp();
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewPhotos, setPreviewPhotos] = useState([]);
@@ -291,47 +291,32 @@ const PhotoUpload = () => {
 
   return (
     <div>
-      <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>上传照片</h2>
+      <h2 className="text-lg font-semibold text-slate-800 uppercase tracking-wider mb-4">上传照片</h2>
       
       {uploading ? (
-        <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '2rem', textAlign: 'center' }}>
-          <LoadingSpinner size="lg" />
-          <p style={{ fontSize: '0.875rem', color: '#4b5563', marginTop: '1rem' }}>正在处理照片...</p>
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center">
+          <div className="relative w-20 h-20 mx-auto mb-4">
+            <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <LoadingSpinner size="md" />
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 mb-4 font-medium">正在处理照片...</p>
           {uploadTotal > 0 && (
             <>
-              <div style={{ 
-                width: '100%', 
-                height: '0.5rem', 
-                background: '#e5e7eb', 
-                borderRadius: '0.25rem', 
-                marginTop: '1rem',
-                overflow: 'hidden'
-              }}>
-                <div style={{ 
-                  width: `${(uploadProgress / uploadTotal) * 100}%`, 
-                  height: '100%', 
-                  background: 'linear-gradient(to right, #3b82f6, #2563eb)', 
-                  transition: 'width 0.3s',
-                  borderRadius: '0.25rem'
-                }} />
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-3">
+                <div 
+                  className="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 transition-all duration-500 ease-out rounded-full"
+                  style={{ width: `${(uploadProgress / uploadTotal) * 100}%` }}
+                />
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+              <p className="text-xs text-slate-500 mb-4">
                 {uploadProgress} / {uploadTotal} 张照片
               </p>
               <button
                 onClick={handleCancelUpload}
-                style={{
-                  marginTop: '1rem',
-                  padding: '0.5rem 1rem',
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
+                className="px-6 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all shadow-lg hover:shadow-xl hover:scale-105"
               >
                 取消上传
               </button>
@@ -340,15 +325,11 @@ const PhotoUpload = () => {
         </div>
       ) : (
         <div
-          style={{
-            background: 'white',
-            borderRadius: '0.75rem',
-            border: '2px dashed #d1d5db',
-            padding: '1.5rem',
-            textAlign: 'center',
-            transition: 'all 0.3s',
-            cursor: 'pointer'
-          }}
+          className={`bg-white rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-300 cursor-pointer group ${
+            dragActive 
+              ? 'border-amber-400 bg-amber-50/50 scale-[1.02] shadow-xl shadow-amber-500/10' 
+              : 'border-slate-300 hover:border-amber-400 hover:bg-slate-50/50 hover:scale-[1.01]'
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -362,39 +343,26 @@ const PhotoUpload = () => {
             onChange={handleFileSelect}
             className="hidden"
           />
-          <label
-            htmlFor="photo-upload"
-            style={{ cursor: 'pointer' }}
-          >
-            <div style={{ 
-              width: '4rem', 
-              height: '4rem', 
-              background: 'linear-gradient(to bottom right, #dbeafe, #bfdbfe)', 
-              borderRadius: '1rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              margin: '0 auto 1rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-            }}>
-              <svg style={{ width: '2rem', height: '2rem', color: '#3b82f6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label htmlFor="photo-upload" className="cursor-pointer block">
+            <div className="w-20 h-20 bg-gradient-to-br from-amber-100 via-orange-100 to-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <svg className="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </div>
-            <h3 style={{ fontSize: '1rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>上传照片</h3>
-            <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>点击或拖拽文件到此处</p>
-            <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.5rem' }}>支持 JPG, PNG, WebP 格式</p>
+            <h3 className="text-base font-semibold text-slate-800 mb-1 group-hover:text-amber-600 transition-colors">上传照片</h3>
+            <p className="text-sm text-slate-500">点击或拖拽文件到此处</p>
+            <p className="text-xs text-slate-400 mt-2">支持 JPG, PNG, WebP 格式</p>
           </label>
         </div>
       )}
 
       {previewPhotos.length > 0 && (
         <div 
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-300"
           onMouseDown={handleMouseDown}
         >
           <div 
-            className="bg-white rounded-2xl shadow-2xl w-[40vw] h-[60vh] overflow-hidden flex flex-col border border-gray-200"
+            className="bg-white rounded-3xl shadow-2xl w-[45vw] h-[65vh] overflow-hidden flex flex-col border border-slate-200"
             style={{
               position: 'absolute',
               left: `calc(50% + ${windowPosition.x}px)`,
@@ -403,16 +371,16 @@ const PhotoUpload = () => {
               cursor: isDragging ? 'grabbing' : 'grab'
             }}
           >
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
               <div>
-                <h3 className="text-lg font-bold text-gray-800">
-                  照片预览 <span className="text-blue-500">({currentIndex + 1}/{previewPhotos.length})</span>
+                <h3 className="text-lg font-bold text-slate-800">
+                  照片预览 <span className="text-amber-500">({currentIndex + 1}/{previewPhotos.length})</span>
                 </h3>
-                <p className="text-sm text-gray-500 mt-0.5">{previewPhotos[currentIndex].name}</p>
+                <p className="text-sm text-slate-500 mt-0.5">{previewPhotos[currentIndex].name}</p>
               </div>
               <button
                 onClick={handleCancel}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all hover:scale-110"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -422,29 +390,29 @@ const PhotoUpload = () => {
 
             <div className="flex-1 overflow-y-auto p-6">
               <div className="flex flex-col gap-4">
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
                   <img
                     src={previewPhotos[currentIndex].url}
                     alt={previewPhotos[currentIndex].name}
-                    className="w-full h-48 object-contain rounded-lg"
+                    className="w-full h-52 object-contain rounded-xl shadow-inner"
                   />
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">拍摄时间 *</label>
+                    <label className="text-sm font-semibold text-slate-700">拍摄时间 *</label>
                     <input
                       type="datetime-local"
                       value={previewPhotos[currentIndex].manualTime}
                       onChange={(e) => updatePhotoField(currentIndex, 'manualTime', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">拍摄地点</label>
+                    <label className="text-sm font-semibold text-slate-700">拍摄地点</label>
                     {!previewPhotos[currentIndex].gps && !previewPhotos[currentIndex].selectedLocation && (
-                      <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-2">
+                      <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-start gap-2">
                         <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
@@ -460,24 +428,24 @@ const PhotoUpload = () => {
                         value={previewPhotos[currentIndex].manualAddress}
                         onChange={(e) => updatePhotoField(currentIndex, 'manualAddress', e.target.value)}
                         placeholder="输入地址搜索"
-                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                       />
                       <button
                         onClick={() => handleLocationSearch(currentIndex)}
-                        className="px-4 py-2.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors shadow-sm"
+                        className="px-4 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
                       >
                         搜索
                       </button>
                     </div>
                     {previewPhotos[currentIndex].selectedLocation && (
-                      <div className="bg-blue-50 border border-blue-200 p-2 rounded-lg text-xs text-blue-800">
+                      <div className="bg-blue-50 border border-blue-200 p-2 rounded-xl text-xs text-blue-800">
                         已选择: {previewPhotos[currentIndex].manualAddress}
                       </div>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">选择标签</label>
+                    <label className="text-sm font-semibold text-slate-700">选择标签</label>
                     
                     {tags.length > 0 && (
                       <div className="flex flex-wrap gap-2">
@@ -485,10 +453,10 @@ const PhotoUpload = () => {
                           <button
                             key={tag.id}
                             onClick={() => toggleTag(currentIndex, tag.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                               previewPhotos[currentIndex].tags.includes(tag.id)
-                                ? 'text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'text-white shadow-lg transform scale-105'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                             }`}
                             style={{
                               backgroundColor: previewPhotos[currentIndex].tags.includes(tag.id) ? tag.color : undefined
@@ -504,7 +472,7 @@ const PhotoUpload = () => {
                       <input
                         type="text"
                         placeholder="新标签"
-                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
                             handleAddNewTag(currentIndex, e.target.value);
@@ -518,7 +486,7 @@ const PhotoUpload = () => {
                           handleAddNewTag(currentIndex, input.value);
                           input.value = '';
                         }}
-                        className="px-4 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors shadow-sm"
+                        className="px-4 py-2.5 bg-green-500 text-white rounded-xl text-sm font-medium hover:bg-green-600 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
                       >
                         添加
                       </button>
@@ -528,21 +496,21 @@ const PhotoUpload = () => {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+            <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="flex gap-2">
                 {previewPhotos.length > 1 && (
                   <>
                     <button
                       onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
                       disabled={currentIndex === 0}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      className="px-4 py-2 border border-slate-300 rounded-xl text-sm font-medium hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-md"
                     >
                       上一张
                     </button>
                     <button
                       onClick={() => setCurrentIndex(Math.min(previewPhotos.length - 1, currentIndex + 1))}
                       disabled={currentIndex === previewPhotos.length - 1}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      className="px-4 py-2 border border-slate-300 rounded-xl text-sm font-medium hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-md"
                     >
                       下一张
                     </button>
@@ -553,19 +521,19 @@ const PhotoUpload = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100 transition-all"
+                  className="px-4 py-2 border border-slate-300 rounded-xl text-sm font-medium hover:bg-slate-100 transition-all hover:shadow-md"
                 >
                   取消
                 </button>
                 <button
                   onClick={() => handleSavePhoto(currentIndex)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors shadow-sm"
+                  className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
                 >
                   保存当前
                 </button>
                 <button
                   onClick={handleSaveAll}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors shadow-sm"
+                  className="px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-medium hover:bg-green-600 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
                 >
                   全部保存
                 </button>

@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
 import { Button } from './ui';
 
 const BackupManager = () => {
-  const { photos, tags, exportData, importData } = useAppContext();
+  const { photos, tags, exportData, importData } = useApp();
   const fileInputRef = useRef(null);
 
   const handleExport = () => {

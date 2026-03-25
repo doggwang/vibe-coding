@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { useAppContext } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
 import { filterPhotosByTag, sortPhotosByTime } from '../utils/mapUtils';
 import { TraceLine } from './TraceLine';
 import 'leaflet/dist/leaflet.css';
@@ -18,7 +18,7 @@ const MapController = ({ center, zoom }) => {
 };
 
 const MapContainerComponent = () => {
-  const { photos, selectedTag, showTrace, selectedPhoto, setSelectedPhoto } = useAppContext();
+  const { photos, selectedTag, showTrace, selectedPhoto, setSelectedPhoto } = useApp();
   const [center, setCenter] = useState([35.8617, 104.1954]);
   const [zoom, setZoom] = useState(4);
   const [locating, setLocating] = useState(false);
@@ -83,11 +83,12 @@ const MapContainerComponent = () => {
   };
 
   return (
-    <div className="h-full w-full relative" style={{ height: '100%', width: '100%', minHeight: '400px' }}>
+    <div className="h-full w-full relative">
       <MapContainer
         center={center}
         zoom={zoom}
         style={{ height: '100%', width: '100%', minHeight: '400px' }}
+        className="z-0"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -112,13 +113,13 @@ const MapContainerComponent = () => {
                   <img
                     src={photo.thumbnailUrl}
                     alt={photo.name}
-                    className="w-full h-auto rounded-lg mb-3 border border-gray-200"
+                    className="w-full h-auto rounded-xl mb-3 border-2 border-slate-200 shadow-lg"
                   />
-                  <h3 className="font-semibold text-sm text-gray-800 mb-2">{photo.name}</h3>
-                  <p className="text-xs text-gray-600 mb-2">
+                  <h3 className="font-semibold text-sm text-slate-800 mb-2">{photo.name}</h3>
+                  <p className="text-xs text-slate-600 mb-2">
                     {photo.gps.address || '未知位置'}
                   </p>
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-slate-500 mb-3">
                     {new Date(photo.createTime).toLocaleString('zh-CN')}
                   </p>
                   {photo.tags.length > 0 && (
@@ -126,7 +127,7 @@ const MapContainerComponent = () => {
                       {photo.tags.map(tag => (
                         <span
                           key={tag}
-                          className="text-xs bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md font-medium"
+                          className="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg font-medium shadow-sm"
                         >
                           {tag}
                         </span>
@@ -141,44 +142,21 @@ const MapContainerComponent = () => {
       </MapContainer>
 
       {sortedPhotos.length === 0 && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-95 border border-gray-200 px-6 py-3 rounded-lg shadow-sm z-[1000]">
-          <p className="text-sm text-gray-600">暂无照片标记，上传照片后地图上会显示标记点</p>
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm border border-slate-200 px-6 py-3 rounded-2xl shadow-xl z-[1000]">
+          <p className="text-sm text-slate-600">暂无照片标记，上传照片后地图上会显示标记点</p>
         </div>
       )}
 
       <button
         onClick={handleLocateMe}
         disabled={locating}
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          zIndex: 1000,
-          padding: '0.75rem',
-          background: 'white',
-          border: '1px solid #e5e7eb',
-          borderRadius: '0.5rem',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          cursor: locating ? 'not-allowed' : 'pointer',
-          opacity: locating ? 0.6 : 1,
-          transition: 'all 0.2s',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
+        className="absolute top-4 right-4 z-[1000] p-3 bg-white border border-slate-200 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed group"
         title="定位到我"
       >
         {locating ? (
-          <div style={{
-            width: '1.25rem',
-            height: '1.25rem',
-            border: '2px solid #d1d5db',
-            borderTopColor: '#3b82f6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
+          <div className="w-5 h-5 border-2 border-slate-300 border-t-amber-500 rounded-full animate-spin" />
         ) : (
-          <svg style={{ width: '1.25rem', height: '1.25rem', color: '#3b82f6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
