@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { filterPhotosByTag, sortPhotosByTime } from '../utils/mapUtils';
 import { EmptyState } from './ui';
 
 const PhotoWall = () => {
-  const { photos, selectedTag, tags } = useAppContext();
+  const { photos, selectedTag, tags, selectedPhoto, setSelectedPhoto } = useAppContext();
   const filteredPhotos = filterPhotosByTag(photos, selectedTag);
   const sortedPhotos = sortPhotosByTime(filteredPhotos);
+  const photoRefs = useRef({});
 
   const getTagName = (tagId) => {
     const tag = tags.find(t => t.id === tagId);
     return tag ? tag.name : tagId;
+  };
+
+  useEffect(() => {
+    if (selectedPhoto && photoRefs.current[selectedPhoto]) {
+      photoRefs.current[selectedPhoto].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  }, [selectedPhoto]);
+
+  const handlePhotoClick = (photo) => {
+    setSelectedPhoto(photo.id);
   };
 
   if (sortedPhotos.length === 0) {
@@ -45,14 +59,17 @@ const PhotoWall = () => {
         {sortedPhotos.map((photo) => (
           <div
             key={photo.id}
+            ref={(el) => photoRefs.current[photo.id] = el}
+            onClick={() => handlePhotoClick(photo)}
             style={{
               position: 'relative',
               background: 'white',
               borderRadius: '0.75rem',
-              border: '1px solid #e5e7eb',
+              border: selectedPhoto === photo.id ? '2px solid #3b82f6' : '1px solid #e5e7eb',
               overflow: 'hidden',
               transition: 'all 0.3s',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              boxShadow: selectedPhoto === photo.id ? '0 4px 12px rgba(59, 130, 246, 0.3)' : 'none'
             }}
           >
             <div style={{ aspectRatio: '1', position: 'relative', overflow: 'hidden' }}>

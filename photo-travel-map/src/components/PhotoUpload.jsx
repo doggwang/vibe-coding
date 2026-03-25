@@ -12,6 +12,9 @@ const PhotoUpload = () => {
   const [windowPosition, setWindowPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadTotal, setUploadTotal] = useState(0);
+  const [cancelUpload, setCancelUpload] = useState(false);
 
   const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files);
@@ -19,14 +22,26 @@ const PhotoUpload = () => {
 
     setUploading(true);
     setLoading(true);
+    setUploadTotal(files.length);
+    setUploadProgress(0);
+    setCancelUpload(false);
 
-    const photoPromises = files.map(async (file) => {
+    const validPhotos = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      if (cancelUpload) {
+        break;
+      }
+      
+      const file = files[i];
+      setUploadProgress(i + 1);
+      
       try {
         const exifData = await parsePhotoExif(file);
         const photoUrl = await createPhotoUrl(file);
         const thumbnailUrl = await createThumbnail(file);
 
-        return {
+        validPhotos.push({
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           name: file.name,
           url: photoUrl,
@@ -42,20 +57,25 @@ const PhotoUpload = () => {
             lng: exifData.gps.longitude
           } : null,
           showLocationPicker: false
-        };
+        });
       } catch (error) {
         console.error('解析照片失败:', error);
-        return null;
       }
-    });
-
-    const photos = await Promise.all(photoPromises);
-    const validPhotos = photos.filter(p => p !== null);
+    }
     
-    setPreviewPhotos(validPhotos);
-    setCurrentIndex(0);
+    if (!cancelUpload && validPhotos.length > 0) {
+      setPreviewPhotos(validPhotos);
+      setCurrentIndex(0);
+    }
+    
     setUploading(false);
     setLoading(false);
+    setUploadProgress(0);
+    setUploadTotal(0);
+  };
+
+  const handleCancelUpload = () => {
+    setCancelUpload(true);
   };
 
   const handleDrag = (e) => {
@@ -277,6 +297,46 @@ const PhotoUpload = () => {
         <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '2rem', textAlign: 'center' }}>
           <LoadingSpinner size="lg" />
           <p style={{ fontSize: '0.875rem', color: '#4b5563', marginTop: '1rem' }}>正在处理照片...</p>
+          {uploadTotal > 0 && (
+            <>
+              <div style={{ 
+                width: '100%', 
+                height: '0.5rem', 
+                background: '#e5e7eb', 
+                borderRadius: '0.25rem', 
+                marginTop: '1rem',
+                overflow: 'hidden'
+              }}>
+                <div style={{ 
+                  width: `${(uploadProgress / uploadTotal) * 100}%`, 
+                  height: '100%', 
+                  background: 'linear-gradient(to right, #3b82f6, #2563eb)', 
+                  transition: 'width 0.3s',
+                  borderRadius: '0.25rem'
+                }} />
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                {uploadProgress} / {uploadTotal} 张照片
+              </p>
+              <button
+                onClick={handleCancelUpload}
+                style={{
+                  marginTop: '1rem',
+                  padding: '0.5rem 1rem',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                取消上传
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div
@@ -383,6 +443,17 @@ const PhotoUpload = () => {
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700">拍摄地点</label>
+                    {!previewPhotos[currentIndex].gps && !previewPhotos[currentIndex].selectedLocation && (
+                      <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-start gap-2">
+                        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div>
+                          <p className="text-sm font-medium text-amber-800">此照片没有GPS信息</p>
+                          <p className="text-xs text-amber-700 mt-0.5">请在下方输入地址，手动添加拍摄地点</p>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <input
                         type="text"

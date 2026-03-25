@@ -18,18 +18,68 @@ const MapController = ({ center, zoom }) => {
 };
 
 const MapContainerComponent = () => {
-  const { photos, selectedTag, showTrace } = useAppContext();
+  const { photos, selectedTag, showTrace, selectedPhoto, setSelectedPhoto } = useAppContext();
   const [center, setCenter] = useState([35.8617, 104.1954]);
   const [zoom, setZoom] = useState(4);
+  const [locating, setLocating] = useState(false);
 
   const filteredPhotos = filterPhotosByTag(photos, selectedTag);
   const sortedPhotos = sortPhotosByTime(filteredPhotos.filter(p => p.gps));
 
+  useEffect(() => {
+    if (selectedPhoto) {
+      const photo = photos.find(p => p.id === selectedPhoto);
+      if (photo && photo.gps) {
+        setCenter([photo.gps.latitude, photo.gps.longitude]);
+        setZoom(12);
+      }
+    }
+  }, [selectedPhoto, photos]);
+
   const handleMarkerClick = (photo) => {
     if (photo.gps) {
       setCenter([photo.gps.latitude, photo.gps.longitude]);
-      setZoom(10);
+      setZoom(12);
+      setSelectedPhoto(photo.id);
     }
+  };
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert('您的浏览器不支持定位功能');
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setCenter([latitude, longitude]);
+        setZoom(12);
+        setLocating(false);
+      },
+      (error) => {
+        setLocating(false);
+        let errorMessage = '定位失败';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = '您拒绝了定位请求，请在浏览器设置中允许定位';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = '位置信息不可用';
+            break;
+          case error.TIMEOUT:
+            errorMessage = '定位请求超时';
+            break;
+        }
+        alert(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
   };
 
   return (
@@ -95,6 +145,45 @@ const MapContainerComponent = () => {
           <p className="text-sm text-gray-600">暂无照片标记，上传照片后地图上会显示标记点</p>
         </div>
       )}
+
+      <button
+        onClick={handleLocateMe}
+        disabled={locating}
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 1000,
+          padding: '0.75rem',
+          background: 'white',
+          border: '1px solid #e5e7eb',
+          borderRadius: '0.5rem',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          cursor: locating ? 'not-allowed' : 'pointer',
+          opacity: locating ? 0.6 : 1,
+          transition: 'all 0.2s',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        title="定位到我"
+      >
+        {locating ? (
+          <div style={{
+            width: '1.25rem',
+            height: '1.25rem',
+            border: '2px solid #d1d5db',
+            borderTopColor: '#3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+        ) : (
+          <svg style={{ width: '1.25rem', height: '1.25rem', color: '#3b82f6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        )}
+      </button>
     </div>
   );
 };

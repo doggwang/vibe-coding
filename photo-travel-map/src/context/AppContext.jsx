@@ -14,6 +14,7 @@ export const AppProvider = ({ children }) => {
   const [photos, setPhotos] = useState([]);
   const [tags, setTags] = useState([]);
   const [selectedTag, setSelectedTag] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [showTrace, setShowTrace] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -113,9 +114,11 @@ export const AppProvider = ({ children }) => {
     photos,
     tags,
     selectedTag,
+    selectedPhoto,
     showTrace,
     loading,
     setSelectedTag,
+    setSelectedPhoto,
     setShowTrace,
     setLoading,
     addPhoto,
